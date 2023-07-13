@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
-from etc.entities import Chapter, Subchapter, Work, Material, MiM
+
+from etc.entities import Chapter, Material, MiM, Subchapter, Work
 
 
 class EstimateBaseTemplate:

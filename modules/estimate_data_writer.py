@@ -1,10 +1,10 @@
-from modules.estimate_data_collector import EstimateBaseTemplate
-from etc.entities import Chapter, Subchapter, Work, Material, MiM
-from openpyxl import load_workbook
 from datetime import date
 from time import time
 
-from pprint import pprint
+from openpyxl import load_workbook
+
+from etc.entities import Chapter, Material, MiM, Subchapter, Work
+from modules.estimate_data_collector import EstimateBaseTemplate
 
 
 class NeosintezTemplate:

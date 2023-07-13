@@ -1,1 +1,5 @@
-*.xlsx
+/input/*.xlsx
+/output/*.xlsx
+__pycache__/
+/.venv
+/tests

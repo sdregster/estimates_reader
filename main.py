@@ -1,6 +1,7 @@
+import os
+
 from modules.estimate_data_collector import EstimateBaseTemplate
 from modules.estimate_data_writer import NeosintezTemplate
-import os
 
 
 if __name__ == "__main__":
