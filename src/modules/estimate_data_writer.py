@@ -1,5 +1,6 @@
 from datetime import date
 from time import time
+import os
 
 from openpyxl import load_workbook
 
@@ -9,7 +10,7 @@ from modules.estimate_data_collector import EstimateBaseTemplate
 
 class NeosintezTemplate:
     def __init__(self) -> None:
-        self.__wb = load_workbook("data/template.xlsx")
+        self.__wb = load_workbook("src/data/template.xlsx")
         self.__ws = self.__wb.active
         self.cursor = 2
         
@@ -130,7 +131,7 @@ class NeosintezTemplate:
 
     def _finish(self):
         self.__ws.title = 'result'
-        self.__wb.save(f"output/{date.today()}_{int(time())}_neosintez_template.xlsx")
+        self.__wb.save(f"{os.getcwd()}\!output\{date.today()}_{int(time())}_neosintez_template.xlsx")
         self.__wb.close()
 
     def export(self, estimates_list: list[EstimateBaseTemplate]):

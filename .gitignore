@@ -1,5 +1,5 @@
-/input/*.xlsx
-/output/*.xlsx
+*.xlsx
+!template.xlsx
 __pycache__/
 /.venv
 /tests
