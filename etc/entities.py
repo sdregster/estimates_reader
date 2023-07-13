@@ -99,9 +99,9 @@ class Material:
 
     @__init__.register(list)
     def _process_list(self, row_values):
-        self.total_name = ". ".join([str(row_values[0]), str(row_values[2])]).strip()
+        self.total_name = ". ".join([str(row_values[0].split('\n')[0]), str(row_values[2])]).strip()
         self.name = str(row_values[2]).strip()
-        self.index = int(row_values[0])
+        self.index = int(row_values[0].split('\n')[0])
         self.reason = str(row_values[1]).strip()
         self.unit = str(row_values[3]).strip()
         self.amount = float(row_values[5]) if row_values[5] else 0

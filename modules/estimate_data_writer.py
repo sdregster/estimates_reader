@@ -1,23 +1,28 @@
 from modules.estimate_data_collector import EstimateBaseTemplate
-from etc.entities import Chapter, Work, Material, MiM
+from etc.entities import Chapter, Subchapter, Work, Material, MiM
 from openpyxl import load_workbook
 
 from pprint import pprint
 
 
 class NeosintezTemplate:
-    class_levels = {"Смета": 1, "Раздел сметы": 2, "Строка сметы": 3, "МиМ сметы": 4}
-
     def __init__(self, obj: EstimateBaseTemplate) -> None:
         self.keystone_data = obj.__dict__
         self.__wb = load_workbook("data/template.xlsx")
         self.__ws = self.__wb.active
         self.cursor = 2
+        
+        if obj.has_subchapters:
+            self.class_levels = {"Смета": 1, "Раздел сметы": 2, "Подраздел сметы": 3, "Строка сметы": 4, "МиМ сметы": 5}
+        else:
+            self.class_levels = {"Смета": 1, "Раздел сметы": 2, "Строка сметы": 3, "МиМ сметы": 4}
 
     def _write_header(self):
-        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_group_code"]
-        self.__ws.cell(self.cursor, 2).value = self.cursor - 1
-        self.__ws.cell(self.cursor, 4).value = "Смета"
+        class_name = "Смета"
+        
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
+        self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
+        self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 9).value = self.keystone_data[
             "estimate_total_number"
         ]
@@ -43,7 +48,18 @@ class NeosintezTemplate:
     def _write_chapter(self, obj: Chapter):
         class_name = "Раздел сметы"
 
-        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_group_code"]
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
+        self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
+        self.__ws.cell(self.cursor, 4).value = class_name
+        self.__ws.cell(self.cursor, 5).value = obj.name
+        self.__ws.cell(self.cursor, 9).value = obj.name
+
+        self.cursor += 1
+        
+    def _write_subchapter(self, obj: Subchapter):
+        class_name = "Подраздел сметы"
+
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
         self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 5).value = obj.name
@@ -54,7 +70,7 @@ class NeosintezTemplate:
     def _write_work(self, obj: Work):
         class_name = "Строка сметы"
 
-        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_group_code"]
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
         self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "Работа"
@@ -78,7 +94,7 @@ class NeosintezTemplate:
     def _write_material(self, obj: Material):
         class_name = "Строка сметы"
 
-        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_group_code"]
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
         self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "МТР-Материалы"
@@ -102,7 +118,7 @@ class NeosintezTemplate:
     def _write_mim(self, obj: MiM):
         class_name = "МиМ сметы"
 
-        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_group_code"]
+        self.__ws.cell(self.cursor, 1).value = self.keystone_data["estimate_total_number"]
         self.__ws.cell(self.cursor, 2).value = self.class_levels[class_name]
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "МиМ"
@@ -123,7 +139,7 @@ class NeosintezTemplate:
         self.cursor += 1
 
     def _finish(self):
-        self.__wb.save(f"{self.keystone_data['estimate_total_number']}_nt.xlsx")
+        self.__wb.save(f"output/{self.keystone_data['estimate_total_number']}_nt.xlsx")
         self.__wb.close()
 
     def export(self):
@@ -134,6 +150,9 @@ class NeosintezTemplate:
         for row in self.keystone_data["rows"]:
             if isinstance(row, Chapter):
                 self._write_chapter(row)
+            
+            if isinstance(row, Subchapter):
+                self._write_subchapter(row)
 
             if isinstance(row, Work):
                 self._write_work(row)
