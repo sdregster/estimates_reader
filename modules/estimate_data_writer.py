@@ -2,6 +2,7 @@ from modules.estimate_data_collector import EstimateBaseTemplate
 from etc.entities import Chapter, Subchapter, Work, Material, MiM
 from openpyxl import load_workbook
 from datetime import date
+from time import time
 
 from pprint import pprint
 
@@ -11,11 +12,14 @@ class NeosintezTemplate:
         self.__wb = load_workbook("data/template.xlsx")
         self.__ws = self.__wb.active
         self.cursor = 2
+        
+        self.temp_estimate_number = None
+        self.temp_chapter_level = 2
 
-    def _write_header(self, obj: EstimateBaseTemplate, class_levels: dict):
+    def _write_header(self, obj: EstimateBaseTemplate):
         class_name = "Смета"
         self.__ws.cell(self.cursor, 1).value = obj.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 2).value = 1
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 9).value = obj.estimate_total_number
         self.__ws.cell(self.cursor, 23).value = obj.estimate_work_name
@@ -31,33 +35,33 @@ class NeosintezTemplate:
 
         self.cursor += 1
 
-    def _write_chapter(self, estimate: EstimateBaseTemplate, class_levels: dict, obj: Chapter):
+    def _write_chapter(self, obj: Chapter):
         class_name = "Раздел сметы"
 
-        self.__ws.cell(self.cursor, 1).value = estimate.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 1).value = self.temp_estimate_number
+        self.__ws.cell(self.cursor, 2).value = 2
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 5).value = obj.name
         self.__ws.cell(self.cursor, 9).value = obj.name
 
         self.cursor += 1
 
-    def _write_subchapter(self, estimate: EstimateBaseTemplate, class_levels: dict, obj: Subchapter):
+    def _write_subchapter(self, obj: Subchapter):
         class_name = "Подраздел сметы"
 
-        self.__ws.cell(self.cursor, 1).value = estimate.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 1).value = self.temp_estimate_number
+        self.__ws.cell(self.cursor, 2).value = self.temp_chapter_level
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 5).value = obj.name
         self.__ws.cell(self.cursor, 9).value = obj.name
 
         self.cursor += 1
 
-    def _write_work(self, estimate: EstimateBaseTemplate, class_levels: dict, obj: Work):
+    def _write_work(self, obj: Work):
         class_name = "Строка сметы"
 
-        self.__ws.cell(self.cursor, 1).value = estimate.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 1).value = self.temp_estimate_number
+        self.__ws.cell(self.cursor, 2).value = self.temp_chapter_level + 1
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "Работа"
         self.__ws.cell(self.cursor, 9).value = obj.total_name
@@ -77,11 +81,11 @@ class NeosintezTemplate:
 
         self.cursor += 1
 
-    def _write_material(self, estimate: EstimateBaseTemplate, class_levels: dict, obj: Material):
+    def _write_material(self, obj: Material):
         class_name = "Строка сметы"
 
-        self.__ws.cell(self.cursor, 1).value = estimate.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 1).value = self.temp_estimate_number
+        self.__ws.cell(self.cursor, 2).value = self.temp_chapter_level + 1
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "МТР-Материалы"
         self.__ws.cell(self.cursor, 9).value = obj.total_name
@@ -101,11 +105,11 @@ class NeosintezTemplate:
 
         self.cursor += 1
 
-    def _write_mim(self, estimate: EstimateBaseTemplate, class_levels: dict, obj: MiM):
+    def _write_mim(self, obj: MiM):
         class_name = "МиМ сметы"
 
-        self.__ws.cell(self.cursor, 1).value = estimate.estimate_total_number
-        self.__ws.cell(self.cursor, 2).value = class_levels[class_name]
+        self.__ws.cell(self.cursor, 1).value = self.temp_estimate_number
+        self.__ws.cell(self.cursor, 2).value = self.temp_chapter_level + 2
         self.__ws.cell(self.cursor, 4).value = class_name
         self.__ws.cell(self.cursor, 8).value = "МиМ"
         self.__ws.cell(self.cursor, 9).value = obj.name
@@ -125,45 +129,31 @@ class NeosintezTemplate:
         self.cursor += 1
 
     def _finish(self):
-        self.__wb.save(f"output/{date.today()}_nt_template.xlsx")
+        self.__wb.save(f"output/{date.today()}_{int(time())}_neosintez_template.xlsx")
         self.__wb.close()
 
     def export(self, estimates_list: list[EstimateBaseTemplate]):
         for estimate in estimates_list:
-            class_levels = (
-                {
-                    "Смета": 1,
-                    "Раздел сметы": 2,
-                    "Подраздел сметы": 3,
-                    "Строка сметы": 4,
-                    "МиМ сметы": 5,
-                }
-                if estimate.has_subchapters
-                else {
-                    "Смета": 1,
-                    "Раздел сметы": 2,
-                    "Строка сметы": 3,
-                    "МиМ сметы": 4,
-                }
-            )
-
-            self._write_header(estimate, class_levels)
+            self.temp_estimate_number = estimate.estimate_total_number
+            self._write_header(estimate)
 
             for row in estimate.rows:
                 if isinstance(row, Chapter):
-                    self._write_chapter(estimate, class_levels, row)
+                    self.temp_chapter_level = 2 # Сбрасываем до уровня 2, при обнаружении нового раздела
+                    self._write_chapter(row)
 
                 if isinstance(row, Subchapter):
-                    self._write_subchapter(estimate, class_levels, row)
+                    self.temp_chapter_level = 3 # Устанавливаем уровень 3, при обнаружении подраздела
+                    self._write_subchapter(row)
 
                 if isinstance(row, Work):
-                    self._write_work(estimate, class_levels, row)
+                    self._write_work(row)
 
                 if isinstance(row, Material):
-                    self._write_material(estimate, class_levels, row)
+                    self._write_material(row)
 
                 if isinstance(row, MiM):
-                    self._write_mim(estimate, class_levels, row)
+                    self._write_mim(row)
 
-            # finish
-            self._finish()
+        # finish
+        self._finish()
