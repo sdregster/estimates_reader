@@ -129,6 +129,7 @@ class NeosintezTemplate:
         self.cursor += 1
 
     def _finish(self):
+        self.__ws.title = 'result'
         self.__wb.save(f"output/{date.today()}_{int(time())}_neosintez_template.xlsx")
         self.__wb.close()
 
