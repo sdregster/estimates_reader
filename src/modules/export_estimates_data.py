@@ -4,13 +4,13 @@ import os
 
 from openpyxl import load_workbook
 
-from etc.entities import Chapter, Material, MiM, Subchapter, Work
-from modules.estimate_data_collector import EstimateBaseTemplate
+from entities import Chapter, Material, MiM, Subchapter, Work
+from modules.get_estimates_data import EstimateBaseTemplate
 
 
 class NeosintezTemplate:
     def __init__(self) -> None:
-        self.__wb = load_workbook("src/data/template.xlsx")
+        self.__wb = load_workbook("src/asserts/template.xlsx")
         self.__ws = self.__wb.active
         self.cursor = 2
         

@@ -1,6 +1,6 @@
 from openpyxl import load_workbook
 
-from etc.entities import Chapter, Material, MiM, Subchapter, Work
+from entities import Chapter, Material, MiM, Subchapter, Work
 
 
 class EstimateBaseTemplate:
@@ -46,9 +46,6 @@ class EstimateBaseTemplate:
         )
         self.estimate_group_code = self.estimate_reason
         self.estimate_cipher = self.estimate_reason
-        # self.estimate_time_period = (
-        #     str(self.__ws.cell(19, 6).value).replace("_", "").strip()
-        # ) #TODO
 
         for row in range(1, self.__ws.max_row + 1):
             target_value = self.__ws.cell(row, 1).value
